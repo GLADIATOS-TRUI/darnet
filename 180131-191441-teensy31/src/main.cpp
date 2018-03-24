@@ -87,6 +87,7 @@ void setup() {
 void loop() {
     // put your main code here, to run repeatedly:
         //code
+    /*
     uint16_t val;
     uint8_t id[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
     int duduk[] = {2324, 1772, 1804, 2371, 2050, 2046, 2046, 2050, 2071, 2025, 1323, 2792, 3513, 574, 2815, 1295, 2060, 2036};
@@ -112,7 +113,8 @@ void loop() {
     for (int vg = 0; vg<20 ;vg++)
     STDUP[vg] = 2048;
     STDUP[9] -= 124;
-    
+    */
+
     if ((Serial.available())&&(DEATHS))
     {
         if (mulai==0){
