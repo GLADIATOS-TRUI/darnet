@@ -117,8 +117,14 @@ void loop() {
     {
         if (mulai==0){
             mulai = 1;
-            mytimes.begin(rutin, 10000000);    
+            mytimes.begin(rutin, 10000000);   
+            tulisAction(3,state); //action 1 kick, action3 sit, action 2 STDUP
+            delay(5);
+            tulisAction(2,state); 
+            delay(5);
         }
+        
+        
         //while (Serial.available())
         //Serial.read();
         
@@ -136,7 +142,7 @@ void loop() {
             //Serial.println("SSTOPP");
             mytimes.end();
             Robot::Walking::GetInstance() -> Stop();
-            tulisAction(state);
+            tulisAction(1,state); //action 1 kick, action3 sit, action 2 STDUP
            // tendang = 0;
            // delete Robot::Walking::GetInstance();
             //Walking* Walking::m_UniqueInstance = new Walking();
@@ -144,6 +150,7 @@ void loop() {
             Robot::Walking::GetInstance() -> Start();
             Robot::Walking::GetInstance() -> Initialize();
             mytimes.begin(rutin,10000000);
+            tendang = 0;
         }else{
             Robot::Walking::GetInstance() -> Process();
             tulisBody(Robot::Walking::GetInstance());
