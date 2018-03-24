@@ -170,7 +170,7 @@ void arrsyncWritekick (unsigned char *aID, unsigned short sizeI, int *data, int 
     uint8_t addre = 0x1E;
     int each_length = 5;
     int cnt = 0;
-    for (int i=1;i<=sizeI;i++){ // i=1,i<19
+    for (int i=1;i<=18;i++){ // i=1,i<19
         val = data[i-1];
         //for (int j=0;j<2;j++){
         if (i==10)
@@ -186,7 +186,7 @@ void arrsyncWritekick (unsigned char *aID, unsigned short sizeI, int *data, int 
         //}
     }
     //Serial.println("EEE");
-    syncWrite(aID,sizeI,datas,each_length,addre);
+    syncWrite(aID,18,datas,each_length,addre);
 }
 int countSpe3d (unsigned char id,unsigned char times,int tPos,int *state){
     int delta = abs(state[id] - tPos);
@@ -269,6 +269,47 @@ void tulisBody (Robot::Walking *tubuh){
     tulisServo (tubuh->m_Joint, 1);
     while (statuss==0);
     cek.end();
+}
+
+void tulisAction(int *state){
+    uint8_t id[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
+    int duduk[] = {2324, 1772, 1804, 2371, 2050, 2046, 2046, 2050, 2071, 2025, 1323, 2792, 3513, 574, 2815, 1295, 2060, 2036};
+    int Rk1[] = {1818, 2278, 1845, 2248, 2381, 1711, 2048, 2048, 2102, 2049-124, 1731, 2161, 2594, 2036, 2332, 2009, 1928, 1944, 512, 648};
+    int ss1 =  125;
+    int Rk2[] = {1818, 2278, 2111, 2248, 2381, 1711, 2048, 2048, 2236, 2049-124, 1731, 2496, 2594, 1270, 2332, 1728, 1928, 1944, 512, 648};
+    int ss2 =   125;
+    int Rk3[] = {1818, 2278, 2111, 2248, 2381, 1711, 2048, 2048, 2236, 2049-124, 1666, 1974, 2594, 1078, 2332, 1941, 1928, 1944, 512, 648};
+    int ss3 =  125;
+    int Rk4[] = {1818, 2278, 2091, 2251, 2385, 1715, 2048, 2048, 2054, 1940-124, 1754, 2047, 2356, 902, 2213, 1300, 1910, 1974, 512, 648};
+    int ss4 =   25;
+    int Rk5[] = {1818, 2278, 2091, 2251, 2385, 1715, 2048, 2048, 2054, 2023-124, 1754, 2719, 2356, 1486, 2207, 1880, 1902, 1974, 512, 648};
+    int ss5 =   10;
+    int Rk6[] = {1818, 2278, 2091, 2251, 2385, 1715, 2048, 2048, 2054, 1940-124, 1754, 2949, 2356, 2110, 2207, 2156, 1902, 1974, 512, 648};
+    int ss6 =   10;
+    int Rk7[] = {1818, 2278, 1848, 2251, 2385, 1715, 2048, 2048, 2012, 1980-124, 1726, 2790, 2356, 1545, 2207, 2053, 1961, 1977, 512, 648};
+    int ss7 =   10;
+    int Rk8[] = {1818, 2278, 1848, 2251, 2385, 1715, 2048, 2048, 2012, 1980-124, 1726, 2396, 2356, 1756, 2207, 2000, 1961, 1977, 505, 716};
+    int ss8 =   20;
+    int Rk9[] = {1818, 2278, 1848, 2251, 2385, 1715, 2044, 2052, 2012, 2005-124, 1693, 2459, 2574, 1511, 2280, 1788, 2024, 2016, 512, 648};
+    int ss9 =   20;
+    arrsyncWritekick(id,20,Rk1,ss1,state);
+    delay(ss1*20);
+    arrsyncWritekick(id,20,Rk2,ss2,state);
+    delay(ss2*20);
+    arrsyncWritekick(id,20,Rk3,ss3,state);
+    delay(ss3*20);
+    arrsyncWritekick(id,20,Rk4,ss4,state);
+    delay(ss4*20);
+    arrsyncWritekick(id,20,Rk5,ss5,state);
+    delay(ss5*20);
+    arrsyncWritekick(id,20,Rk6,ss6,state);
+    delay(ss6*20);
+    arrsyncWritekick(id,20,Rk7,ss7,state);
+    delay(ss7*25);
+    arrsyncWritekick(id,20,Rk8,ss8,state);
+    delay(ss8*30);
+    arrsyncWritekick(id,20,Rk9,ss9,state);
+    delay(ss9*30);
 }
 
 void ubah(){

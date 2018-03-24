@@ -14,3 +14,4 @@ void tulisServo (Robot::JointData jd, unsigned char pilihan);
 void tulisHead (Robot::Head *kepala);
 void tulisBody (Robot::Walking *tubuh);
 void ubah();
+void tulisAction(int *state);

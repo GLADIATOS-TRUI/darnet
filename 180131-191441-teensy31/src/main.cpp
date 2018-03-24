@@ -61,8 +61,9 @@ void setup() {
     //UART1_MODEM = UART_TXRTSE | UART_TXRTSPOL; 
     Serial2.transmitterEnable(6);
     //pinMode(13, OUTPUT);
-    Robot::Walking::GetInstance() -> Initialize();
+    
     Robot::Walking::GetInstance() -> Start();
+    Robot::Walking::GetInstance() -> Initialize();
     /*
     uint8_t data[100];
     uint8_t id[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18};
@@ -116,53 +117,32 @@ void loop() {
     {
         if (mulai==0){
             mulai = 1;
-            //mytimes.begin(rutin, 10000000);    
+            mytimes.begin(rutin, 10000000);    
         }
         //while (Serial.available())
         //Serial.read();
         
-        uint8_t idgg[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18}; //till 18only
-        uint8_t data[100];
-        unsigned short size_id = 18; //change to 18
+        //uint8_t idgg[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18}; //till 18only
+        //uint8_t data[100];
+        //unsigned short size_id = 18; //change to 18
        
-        uint8_t addre = 0x1E;
-        int each_length = 3;
-        int cnt = 0;
-        //noInterrupts();
-        //int cpy = tendang;
-       // interrupts();
+        //uint8_t addre = 0x1E;
+       // int each_length = 3;
+       // int cnt = 0;
+        noInterrupts();
+        int cpy = tendang;
+        interrupts();
         if (tendang){
             //Serial.println("SSTOPP");
             mytimes.end();
             Robot::Walking::GetInstance() -> Stop();
-            arrsyncWritepos(id,20,STDUP);
-            delay(2);
-            arrsyncWritekick(id,20,Rk1,ss1,state);
-            delay(ss1*30);
-            arrsyncWritekick(id,20,Rk2,ss2,state);
-            delay(ss2*30);
-            arrsyncWritekick(id,20,Rk3,ss3,state);
-            delay(ss3*20);
-            arrsyncWritekick(id,20,Rk4,ss4,state);
-            delay(ss4*20);
-            arrsyncWritekick(id,20,Rk5,ss5,state);
-            delay(ss5*20);
-            arrsyncWritekick(id,20,Rk6,ss6,state);
-            delay(ss6*20);
-            arrsyncWritekick(id,20,Rk7,ss7,state);
-            delay(ss7*25);
-            arrsyncWritekick(id,20,Rk8,ss8,state);
-            delay(ss8*30);
-            arrsyncWritekick(id,20,Rk9,ss9,state);
-            delay(ss9*30);
-            arrsyncWritepos(id,20,STDUP);
-            delay(2);
+            tulisAction(state);
            // tendang = 0;
            // delete Robot::Walking::GetInstance();
             //Walking* Walking::m_UniqueInstance = new Walking();
            // Robot::Walking *m_UniqueInstance = new Robot::Walking();
-            Robot::Walking::GetInstance() -> Initialize();
             Robot::Walking::GetInstance() -> Start();
+            Robot::Walking::GetInstance() -> Initialize();
             mytimes.begin(rutin,10000000);
         }else{
             Robot::Walking::GetInstance() -> Process();
