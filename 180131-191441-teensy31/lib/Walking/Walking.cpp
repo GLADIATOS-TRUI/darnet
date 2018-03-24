@@ -658,6 +658,4 @@ void Walking::Process()
         m_Joint.SetIGain(id, I_GAIN);
         m_Joint.SetDGain(id, D_GAIN);
 	}
-    for (int i=0 ; i<=18; i++){
-    m_angleshow[i]=outValue[i];}
 }

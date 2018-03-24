@@ -43,6 +43,8 @@
 #define ERRBIT_OVERLOAD         32      // The current load cannot be controlled by the set torque.
 #define ERRBIT_INSTRUCTION      64      // Undefined instruction or delivering the action command without the reg_write command.
 
+int statuss = 0;
+
 void writedata(unsigned char aID, unsigned char addr, unsigned char *data, int size){
     int starts;
     std::vector <unsigned char> param;
@@ -55,9 +57,18 @@ void writedata(unsigned char aID, unsigned char addr, unsigned char *data, int s
     int cnt = 2;
     if (aID == BROADCAST_ID)
         return ;
-    while (Serial2.available()){
-        rxpack.push_back(Serial2.read());
+    IntervalTimer berhenti;
+    statuss = 0;
+    berhenti.begin(ubah, 200000); //counting time to wait from 
+    while (1){
+        while (Serial2.available()){
+            rxpack.push_back(Serial2.read());
+            statuss = 1;
+        }
+        if (statuss == 1)
+            break;
     }
+    berhenti.end();
     while (1){
         if (rxpack[cnt]==0xff){
             cnt++;
@@ -187,4 +198,79 @@ int countSpe3d (unsigned char id,unsigned char times,int tPos,int *state){
     //Serial.printf("%f : \n", gege); 
     //Serial.print("EXT"); 1.43
     return ( (14.15*delta) / (times*1.0) );
+}
+
+// new code @24/03/2018
+
+void tulisServo (Robot::JointData jd, unsigned char pilihan){
+    //pilihan = 1 berarti badan, pilihan = 2 berarti kepala, pilihan = 3 berarti body slope
+    unsigned char sID[20];
+    unsigned short size_id = 0;
+    int each_length; 
+    unsigned char alamat;
+    uint8_t minival;
+    uint16_t val;
+    unsigned char sData[200];
+    uint16_t cnt = 0;
+    if (pilihan==1){
+        alamat = 0x1A;
+        for (int i=0;i<18;i++){
+            each_length = 1;
+            sID[i] = i+1;
+            size_id++;
+            minival = ( (uint8_t) jd.GetDGain(sID[i]) );
+            sData[cnt++] = minival;
+            each_length++;
+
+            minival = ( (uint8_t) jd.GetIGain(sID[i]) );;
+            sData[cnt++] = minival;
+            each_length++;
+
+            minival = ( (uint8_t) jd.GetPGain(sID[i]) );;
+            sData[cnt++] = minival;
+            each_length++;
+            sData[cnt++] = 0;
+            each_length++;
+            val = jd.GetValue(sID[i]);
+            if (i==10)
+                val -= 124;
+            sData[cnt++] = DXL_LOBYTE(val);
+            sData[cnt++] = DXL_HIBYTE(val);
+            each_length+=2;
+        }
+        syncWrite(sID,size_id,sData,each_length,alamat);
+    }else if(pilihan==2){
+        alamat = 0x1E;
+        for (int i=0;i<2;i++){
+            each_length = 1;
+            sID[i] = i+19;
+            size_id++;
+            val = jd.GetAngle(sID[i]);
+            sData[cnt++] = DXL_LOBYTE(val);
+            sData[cnt++] = DXL_HIBYTE(val);
+            each_length+=2;
+        }
+    }
+}
+
+void tulisHead (Robot::Head *kepala){
+    IntervalTimer cek;
+    cek.begin(ubah, 2000000);
+    statuss = 0;
+    tulisServo (kepala->m_Joint, 2);
+    while (statuss==0);
+    cek.end();
+}
+
+void tulisBody (Robot::Walking *tubuh){
+    IntervalTimer cek;
+    cek.begin(ubah, 2000000);
+    statuss = 0;
+    tulisServo (tubuh->m_Joint, 1);
+    while (statuss==0);
+    cek.end();
+}
+
+void ubah(){
+    statuss = 1;
 }

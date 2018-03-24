@@ -3,7 +3,7 @@
  *
  *   Author: ROBOTIS
  *
- */
+*/
 
 #ifndef _MOTION_MODULE_H_
 #define _MOTION_MODULE_H_

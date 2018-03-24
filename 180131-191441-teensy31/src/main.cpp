@@ -12,6 +12,7 @@
 #include <Point.h>
 #include <Vector.h>
 #include <Walking.h>
+#include <Head.h>
 
 #define UART_TXRTSE (2)
 #define UART_TXRTSPOL (4)
@@ -31,12 +32,7 @@ void rutin(){
 int countSpeed (uint8_t id,uint8_t time,int tPos){
     int delta = abs(state[id] - tPos);
     state[id] = tPos;
-  //  Serial.println("CS");
-   // Serial.println(id);
-    //Serial.println(delta);
-    //float gege = (1.43*delta) / (time*1.0);
-   // Serial.printf("%f : \n", gege); 
-    return ( (143*delta) / (time*1.0) );
+    return ( (1.43*delta) / (time*1.0) );
 }
 
 
@@ -93,11 +89,6 @@ void loop() {
     uint16_t val;
     uint8_t id[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
     int duduk[] = {2324, 1772, 1804, 2371, 2050, 2046, 2046, 2050, 2071, 2025, 1323, 2792, 3513, 574, 2815, 1295, 2060, 2036};
-    //uint8_t id[] = {1,2};
-    int tesi[] = {2324, 1772};
-    int ses = 10;
-    int tesi2[] = {2000, 2100};
-    int ses2 = 10;
     int Rk1[] = {1818, 2278, 1845, 2248, 2381, 1711, 2048, 2048, 2102, 2049-124, 1731, 2161, 2594, 2036, 2332, 2009, 1928, 1944, 512, 648};
     int ss1 =  125;
     int Rk2[] = {1818, 2278, 2111, 2248, 2381, 1711, 2048, 2048, 2236, 2049-124, 1731, 2496, 2594, 1270, 2332, 1728, 1928, 1944, 512, 648};
@@ -116,33 +107,16 @@ void loop() {
     int ss8 =   20;
     int Rk9[] = {1818, 2278, 1848, 2251, 2385, 1715, 2044, 2052, 2012, 2005-124, 1693, 2459, 2574, 1511, 2280, 1788, 2024, 2016, 512, 648};
     int ss9 =   20;
-    
     int STDUP[20];
     for (int vg = 0; vg<20 ;vg++)
     STDUP[vg] = 2048;
     STDUP[9] -= 124;
     
-
-    if ((Serial.available ()) & (0)){
-    
-    //uint8_t id[] = {1,2,3,4,5,6};    
-    
-    
-    //arrsyncWritekick (id, 2, tesi, ses,state);
-    //delay(ses*100); timing = time*100 !!
-    //arrsyncWritekick (id, 2, tesi2, ses2,state);
-    //delay(ses2*100);
-    arrsyncWritepos(id,20,STDUP);
-    delay(2);
-    
-    
-    }
-    
     if ((Serial.available())&&(DEATHS))
     {
         if (mulai==0){
             mulai = 1;
-            mytimes.begin(rutin, 20000000);    
+            //mytimes.begin(rutin, 10000000);    
         }
         //while (Serial.available())
         //Serial.read();
@@ -154,11 +128,10 @@ void loop() {
         uint8_t addre = 0x1E;
         int each_length = 3;
         int cnt = 0;
-        noInterrupts();
-        int cpy = tendang;
-        interrupts();
+        //noInterrupts();
+        //int cpy = tendang;
+       // interrupts();
         if (tendang){
-
             //Serial.println("SSTOPP");
             mytimes.end();
             Robot::Walking::GetInstance() -> Stop();
@@ -184,28 +157,16 @@ void loop() {
             delay(ss9*30);
             arrsyncWritepos(id,20,STDUP);
             delay(2);
-            tendang = 0;
-            delete Robot::Walking::GetInstance();
+           // tendang = 0;
+           // delete Robot::Walking::GetInstance();
             //Walking* Walking::m_UniqueInstance = new Walking();
-            Robot::Walking *m_UniqueInstance = new Robot::Walking();
+           // Robot::Walking *m_UniqueInstance = new Robot::Walking();
             Robot::Walking::GetInstance() -> Initialize();
             Robot::Walking::GetInstance() -> Start();
             mytimes.begin(rutin,10000000);
         }else{
             Robot::Walking::GetInstance() -> Process();
-        for (int i=1;i<=18;i++){ // i=1,i<19
-
-            val = Robot::Walking::GetInstance() -> m_Joint.GetValue(i);
-           // val = duduk[i-1];
-            if (i==10)
-                val -= 124;
-            data[cnt++] = DXL_LOBYTE(val);
-            data[cnt++] = DXL_HIBYTE(val);
-        }
-        syncWrite(idgg,size_id,data,each_length,addre);
-        //Serial.print("VEGEGE: ");
-        // Serial.println(Robot::Walking::GetInstance() -> m_Joint.GetValue(10));
-        delay(2);
+            tulisBody(Robot::Walking::GetInstance());
         }
         /*
         std::vector <unsigned char> test;

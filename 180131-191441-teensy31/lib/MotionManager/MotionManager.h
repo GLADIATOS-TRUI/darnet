@@ -11,8 +11,9 @@
 #include <list>
 //#include <fstream>
 //#include <iostream>
-//#include "MotionStatus.h"
+#include "MotionStatus.h"
 //start
+/*
 #ifndef _MOTION_STATUS_H_
 #define _MOTION_STATUS_H_
 
@@ -54,8 +55,10 @@ namespace Robot
 }
 
 #endif
+*/
 //end
-//#include <MotionModule.h>
+#include <MotionModule.h>
+/*
 //start2
 #ifndef _MOTION_MODULE_H_
 #define _MOTION_MODULE_H_
@@ -81,6 +84,7 @@ namespace Robot
 }
 
 #endif
+*/
 //end2
 //#include "CM730.h"
 //#include "minIni.h"
