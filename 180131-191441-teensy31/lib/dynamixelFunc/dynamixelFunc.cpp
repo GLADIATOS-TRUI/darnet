@@ -238,7 +238,9 @@ void tulisServo (Robot::JointData jd, unsigned char pilihan){
             sData[cnt++] = DXL_HIBYTE(val);
             each_length+=2;
         }
+        Serial.print("GEGE");
         syncWrite(sID,size_id,sData,each_length,alamat);
+        
     }else if(pilihan==2){
         alamat = 0x1E;
         for (int i=0;i<2;i++){
@@ -267,7 +269,9 @@ void tulisBody (Robot::Walking *tubuh){
     cek.begin(ubah, 2000000);
     statuss = 0;
     tulisServo (tubuh->m_Joint, 1);
-    while (statuss==0);
+    delay(2);
+    //Serial.print("END");
+    //while (statuss==0);
     cek.end();
 }
 
@@ -293,24 +297,28 @@ void tulisAction(int nomor,int *state){
     int Rk9[] = {1818, 2278, 1845, 2248, 2385, 1711, 2044, 2052, 2012, 2005, 1693, 2459, 2574, 1511, 2280, 1788, 2024, 2016, 512, 648, 20};
    // int ss9 =   20;
    if (nomor==1){
-    arrsyncWritekick(id,20,Rk1,Rk1[20],state);
-    delay(Rk1[20] * 20);
-    arrsyncWritekick(id,20,Rk2,Rk2[20],state);
-    delay(Rk2[20] * 20);
-    arrsyncWritekick(id,20,Rk3,Rk3[20],state);
-    delay(Rk3[20] * 20);
-    arrsyncWritekick(id,20,Rk4,Rk4[20],state);
-    delay(Rk4[20] * 20);
-    arrsyncWritekick(id,20,Rk5,Rk5[20],state);
-    delay(Rk5[20] * 20);
-    arrsyncWritekick(id,20,Rk6,Rk6[20],state);
-    delay(Rk6[20] * 20);
-    arrsyncWritekick(id,20,Rk7,Rk7[20],state);
-    delay(Rk7[20] * 25);
-    arrsyncWritekick(id,20,Rk8,Rk8[20],state);
-    delay(Rk8[20] * 30);
-    arrsyncWritekick(id,20,Rk9,Rk9[20],state);
-    delay(Rk9[20] * 30);
+        arrsyncWritekick(id,20,Rk1,Rk1[20],state);
+        delay(Rk1[20] * 20);
+        arrsyncWritekick(id,20,Rk2,Rk2[20],state);
+        delay(Rk2[20] * 20);
+        arrsyncWritekick(id,20,Rk3,Rk3[20],state);
+        delay(Rk3[20] * 20);
+        arrsyncWritekick(id,20,Rk4,Rk4[20],state);
+        delay(Rk4[20] * 20);
+        arrsyncWritekick(id,20,Rk5,Rk5[20],state);
+        delay(Rk5[20] * 20);
+        arrsyncWritekick(id,20,Rk6,Rk6[20],state);
+        delay(Rk6[20] * 20);
+        arrsyncWritekick(id,20,Rk7,Rk7[20],state);
+        delay(Rk7[20] * 25);
+        arrsyncWritekick(id,20,Rk8,Rk8[20],state);
+        delay(Rk8[20] * 30);
+        arrsyncWritekick(id,20,Rk9,Rk9[20],state);
+        delay(Rk9[20] * 30);
+        arrsyncWritekick(id,18,STDUP,4000,state);
+        delay(2);
+        for (int i=0;i<18;i++)
+            state[i] = STDUP[i];
    }else if(nomor==2){
        arrsyncWritepos(id,18,STDUP);
        delay(2);

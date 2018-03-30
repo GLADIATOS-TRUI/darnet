@@ -62,8 +62,9 @@ void setup() {
     Serial2.transmitterEnable(6);
     //pinMode(13, OUTPUT);
     
-    Robot::Walking::GetInstance() -> Start();
+    
     Robot::Walking::GetInstance() -> Initialize();
+    Robot::Walking::GetInstance() -> Start();
     /*
     uint8_t data[100];
     uint8_t id[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18};
@@ -119,7 +120,7 @@ void loop() {
     {
         if (mulai==0){
             mulai = 1;
-            mytimes.begin(rutin, 10000000);   
+           // mytimes.begin(rutin, 10000000);   
             tulisAction(3,state); //action 1 kick, action3 sit, action 2 STDUP
             delay(5);
             tulisAction(2,state); 
@@ -149,8 +150,9 @@ void loop() {
            // delete Robot::Walking::GetInstance();
             //Walking* Walking::m_UniqueInstance = new Walking();
            // Robot::Walking *m_UniqueInstance = new Robot::Walking();
+           Robot::Walking::GetInstance() -> Initialize();
             Robot::Walking::GetInstance() -> Start();
-            Robot::Walking::GetInstance() -> Initialize();
+            
             mytimes.begin(rutin,10000000);
             tendang = 0;
         }else{
@@ -216,4 +218,3 @@ void loop() {
 
     }
 }
-
