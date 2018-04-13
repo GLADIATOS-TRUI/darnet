@@ -38,13 +38,16 @@ DynamixelPacket::~DynamixelPacket(){
 void DynamixelPacket::transaction(){
   __DYN_SERIAL__.flush();
   int length_written;
+  int skip;
   length_written = __DYN_SERIAL__.write(this -> biPacket,this -> arrsize);
-  __DYN_SERIAL__.flush();
   if (length_written != (this -> arrsize))
-    Serial.println("ERROR");
+    //Serial.println("ERROR");
+    skip =0;
   else
-    Serial.println("SUCCEED");
-  for (int i=0;i<this -> arrsize;i++)
-  Serial.printf("%x ",this->biPacket[i]);
+    //Serial.println("SUCCEED");
+    skip = 1;
+  //for (int i=0;i<this -> arrsize;i++)
+  //Serial.printf("%x ",this->biPacket[i]);
+
   
 }

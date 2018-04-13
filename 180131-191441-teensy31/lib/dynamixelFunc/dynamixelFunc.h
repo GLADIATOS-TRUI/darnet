@@ -2,7 +2,7 @@
 #include <Head.h>
 #include <Walking.h>
 
-void writedata(unsigned char aID, unsigned char addr, unsigned char *data, unsigned int size);
+void writedata(unsigned char aID, unsigned char addr, unsigned char *data, int size, unsigned char inst);
 void readData();
 void regwritedata(unsigned char aID, unsigned char addr, unsigned char *data, unsigned int size);
 void action(unsigned char aID);
