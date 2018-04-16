@@ -1,0 +1,422 @@
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include <iostream>
+
+#include "parameterWarna.cpp"
+
+using namespace std;
+using namespace cv;
+
+#define KIRIKANAN (1)
+#define KANANKIRI (2)
+		
+Mat src, out, gray, asd, channel[3];
+Mat imgHSV, imgIjo, imgGawang, imgLine, imgGaris;
+Size imgSize;
+Point ujungL1, ujungL2, ujungR1, ujungR2;
+Point ujungStart, ujungEnd, ujungMid, ujungLap;
+Point gawangUp, gawangDown;
+float ngitung, ngitungJoss;
+float gradienL, gradienR;
+int gawang[2][2]={-1};
+int gawang2[2][2]={-1};
+	
+double kampretPan=0,kampretGawang=999;
+double cek;
+int kampret=0;
+int kampretWait=5;
+int arah=KIRIKANAN;
+int lebartengah = 128;	
+int thresh = 200;
+int i = 1;
+int proses = 0;
+int dapet = 0;
+	
+void prosesThresholding(Mat src){
+	imgSize = src.size();
+			
+	cvtColor(src, imgHSV, CV_RGB2HSV); //Convert the captured frame from RGB to HSV
+	cvtColor(src,src, CV_RGB2BGR); //biar didisplay openCV, somehow dia maunya BGR bukan RGB
+	
+	inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgIjo); 
+    inRange(imgHSV, Scalar(pLowH, pLowS, pLowV), Scalar(pHighH, pHighS, pHighV), imgGawang); //Threshold the image
+	inRange(imgHSV, Scalar(pLowH, pLowS, pLowV), Scalar(lHighH, lHighS, lHighV), imgLine);
+		
+	//morphological opening (remove small objects from the foreground)
+	erode(imgIjo, imgIjo, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)) );
+	dilate( imgIjo, imgIjo, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)) ); 
+	//morphological closing (fill small holes in the foreground)
+	dilate( imgIjo, imgIjo, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)) ); 
+	erode(imgIjo, imgIjo, getStructuringElement(MORPH_ELLIPSE, Size(3, 3)) );
+		
+	//morphological opening (remove small objects from the foreground)
+	erode(imgGawang, imgGawang, getStructuringElement(MORPH_ELLIPSE, Size(7, 7)) );
+	dilate( imgGawang, imgGawang, getStructuringElement(MORPH_ELLIPSE, Size(7, 7)) ); 
+	//morphological closing (fill small holes in the foreground)
+	dilate( imgGawang, imgGawang, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+	erode(imgGawang, imgGawang, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+
+}
+		
+void cariGawang(int posisiGawang[2][2], int arah, Mat imgGawang, Mat imgIjo, double soedoet){
+
+	Size imgSize = imgGawang.size();
+	bool cariPutih = true;
+	int cari = 5;
+	int x = imgSize.width/2;
+	int yStart=-1;
+	int y;
+	int cariTengah[5][2] = {-1};
+	int ngitung[2] = {0};
+	int tengah = 0;
+	int i = 0;
+	double nyari;
+	
+	posisiGawang[0][0]=-1;
+	posisiGawang[0][1]=-1;
+	posisiGawang[1][0]=-1;
+	posisiGawang[1][1]=-1;
+
+	//http://therandomlab.blogspot.co.id/2013/03/logitech-c920-and-c910-fields-of-view.html
+	//Vertical FOV = 43.3
+	//soedoet = 25 -> robot liat ke bawah
+	//soedoet = 115 -> robot liat lurus ke depan
+	//batas bawah = 90 - 43.3 = 46.7
+	//batas atas = 90 + 43.3 = 133.3
+	//
+	//Horizontal FOV = 70.42
+	//nengok kiri = positif
+	//nengok kanan = negatif
+	soedoet+=50; //di darwinOP, liat bawah itu -25 kok bukan 25???
+	//printf("%.2f\n",soedoet);
+	if(soedoet>=46.7 && soedoet <=133.3){
+		nyari = (soedoet-46.7)/90;
+		yStart = (nyari * imgSize.height) - 16;
+		y =yStart; 
+		if(yStart<=0)return;
+		if(y<=0)y=1;
+		if(y>=imgSize.height)y=imgSize.height-1;
+		for(i = 0; i<cari; i++){
+			if(arah==KIRIKANAN){ //arah scan dari kiri ke kanan
+				x = 0;
+			}else{
+				x = imgSize.width;
+			}
+			//for(x=0;x<=imgSize.width;x++){
+			while(x>=0&&x<=imgSize.width){
+				//printf("%d-",img.at<uchar>(x,y));
+				if(cariPutih==true){
+					if(x==imgSize.width/2)break;
+					if (imgGawang.at<uchar>(y,x)==255){
+						cariTengah[i][0] = x;
+						cariPutih=false;
+						continue;
+					}
+					imgGawang.at<uchar>(y,x)=255;
+				}else{
+					if (imgGawang.at<uchar>(y,x)==0){
+						cariTengah[i][1] = x;
+						cariPutih=true;
+						break;
+					}
+					//imgGawang.at<uchar>(y,x)=0;
+				}
+				if(arah==KIRIKANAN){ //arah scan dari kiri ke kanan
+					x++;
+				}else{
+					x--;
+				}
+			}
+			if(y==0)break;
+			y-= 4;
+			if(y<0)y=0;
+		}
+	
+		for(int i = 0; i<cari; i++){
+			ngitung[0] += cariTengah[i][0];
+			ngitung[1] += cariTengah[i][1];
+		}
+		if(ngitung[0]<0||ngitung[1]<0)return;
+		posisiGawang[0][0] = ((ngitung[0]/cari)+(ngitung[1]/cari))/2;
+		posisiGawang[1][0] = posisiGawang[0][0];
+		tengah = posisiGawang[0][0];
+		for(y=yStart;y>0;y--){
+			posisiGawang[0][1]=-1;
+			if (imgGawang.at<uchar>(y,tengah)==0){
+				posisiGawang[0][1]=y;
+				break;
+			}
+			imgGawang.at<uchar>(y,tengah)=0;
+		}
+		for(y=yStart;y<imgSize.height;y++){
+			posisiGawang[1][1]=-1;//imgSize.height;
+			if (imgIjo.at<uchar>(y,tengah)==255){
+				posisiGawang[1][1]=y;
+				break;
+			}
+			//imgIjo.at<uchar>(y,tengah)=0;
+		}
+	}
+}
+
+int validasiGawang(int arah){
+	return -1;	
+	int valCount = 10;
+	double valTung = 0, valAvg = 0;
+	
+	if (arah == 0){ //kasus spesial buat kampret 0, pertama kali nyari bola
+		if(validasiGawang(KIRIKANAN)==1&&validasiGawang(KANANKIRI)==1)return 1;
+		//else
+		return -1;
+	}
+	
+	cariGawang(gawang,arah,imgGawang,imgIjo,Head::GetInstance()->GetTiltAngle());
+	valAvg=gawang[1][0];
+	
+	while(valCount>0){
+		cariGawang(gawang,arah,imgGawang,imgIjo,Head::GetInstance()->GetTiltAngle());
+		valAvg=(valAvg+gawang[1][0])/2;
+		valTung+=abs(valAvg-gawang[1][0]);
+		valCount--;
+	}
+	if(valTung>64){
+		printf("gagal validasi nih %.2f\n",valTung);
+		return -1;
+	}else{
+		return 1;
+	}
+	
+}
+
+void shootDepan(int kaki){
+	if(kaki == -1){
+        Action::GetInstance()->Start(64);   // RIGHT KICK
+        fprintf(stderr, "RightKick! \n");
+    }else if(kaki == 1){
+        Action::GetInstance()->Start(50);   // LEFT KICK
+        fprintf(stderr, "LeftKick! \n");
+    }
+}
+
+int algoNendangGawang(int kaloLurus){
+		
+	imgGawang.convertTo(imgGawang, CV_8UC1);
+	cek = MotionStatus::m_CurrentJoints.GetAngle(JointData::ID_HEAD_TILT);
+			
+	//kampret algorithm next-gen
+	//(teman-teman kampret: kampretPan , KampretGawang , H::GI->MBA(x,y) , MS::mCJ.GA(x) , H::GI->GLLA )
+	//
+	//kampret 0 = baru pertama kali nyari gawang, nengok sekali ke depan
+	//	kalo dapet kanan doang, masuk ke kampret 1
+	//	kalo dapet kiri doang, masuk kampret 2
+	//
+	//kampret 1 = nyari ke kiri dulu, kalo gak dapet banting ke kanan (kampret 12)
+	//	
+	//kampret 2 = nyari ke kanan dulu, kalo gak dapet masuk kampret 21
+	//
+	//variabel kampretGawang jadi batas buat kampret 1 dan kampret 2
+		
+	if(kampret==0){
+		Head::GetInstance()->MoveByAngle(0,Head::GetInstance()->GetTopLimitAngle());
+		sleep(1);
+	}else if(kampret==1||kampret==21||kampret==111){
+		kampretPan+=5;
+	}else if(kampret==2||kampret==12||kampret==222||kampret==333){
+		kampretPan-=5;
+	}
+	
+	//printf("instruksi: %.2f\n",kampretPan);
+	//printf("before: %.2f\n",MotionStatus::m_CurrentJoints.GetAngle(JointData::ID_HEAD_PAN));	
+	Head::GetInstance()->MoveByAngle(kampretPan,Head::GetInstance()->GetTopLimitAngle());
+	//Head::GetInstance()->m_Joint.SetEnableHeadOnly(true, true);	// - ini gak perlu buat gerakin servo, atasnya aja cukup
+	//printf("kampret %d\nki: %d , ka: %d\n",kampret,gawang[1][0],gawang2[1][0]);	
+	
+	cariGawang(gawang, KIRIKANAN, imgGawang, imgIjo, Head::GetInstance()->GetTiltAngle());
+	gawangUp.x = gawang[0][0];
+	gawangUp.y = gawang[0][1];
+	gawangDown.x = gawang[1][0];
+	gawangDown.y = gawang[1][1];
+	line( src, gawangUp, gawangDown, Scalar( 0, 255, 255 ), 5, 0 );
+		
+	cariGawang(gawang2, KANANKIRI, imgGawang, imgIjo, Head::GetInstance()->GetTiltAngle());
+	gawangUp.x = gawang2[0][0];
+	gawangUp.y = gawang2[0][1];
+	gawangDown.x = gawang2[1][0];
+	gawangDown.y = gawang2[1][1];
+	line( src, gawangUp, gawangDown, Scalar( 0, 255, 255 ), 5, 0 );
+	
+	if(kampret==0){
+		if(gawang[1][0]!=-1&&gawang2[1][0]!=-1&&(abs(gawang[1][0]-gawang2[1][0])>64)){
+			if(validasiGawang(0)==-1)return -1; //KASUS SPESIAL
+			printf("SHOOTDEPAN! 0\n");
+			shootDepan(kaloLurus);
+			//Head::GetInstance()->MoveByAngle(0,Head::GetInstance()->GetTopLimitAngle());
+			kampret=0;
+			kampretPan=0;
+			return 0;
+		}else if(gawang[1][0]!=-1&&gawang2[1][0]==-1){
+			/*kampret = 1;
+			kampretGawang=((gawang2[1][0]-imgSize.width/2)/imgSize.width)*70.42; 
+			+ MotionStatus::m_CurrentJoints.GetAngle(JointData::ID_HEAD_PAN);
+			Head::GetInstance()->MoveByAngle(kampretGawang+35.21,Head::GetInstance()->GetTopLimitAngle());
+			*/
+			printf("SHOOT 45 KIRI DEPAN! 1 new\n");
+			kampret = 0;
+			Action::GetInstance()->Start(71);
+			//Head::GetInstance()->MoveByAngle(Head::GetInstance()->GetLeftLimitAngle()/2,Head::GetInstance()->GetTopLimitAngle());
+			sleep(1);	
+			return 1;
+		}else if(gawang[1][0]==-1&&gawang2[1][0]!=-1){
+			/*kampret = 2;
+			kampretGawang=((gawang[1][0]-imgSize.width/2)/imgSize.width)*70.42; 
+			+ MotionStatus::m_CurrentJoints.GetAngle(JointData::ID_HEAD_PAN);
+			Head::GetInstance()->MoveByAngle(kampretGawang-35.21,Head::GetInstance()->GetTopLimitAngle());
+			*/
+			kampret = 0;
+			printf("SHOOT 45 KANAN DEPAN! 2 new\n");
+			Action::GetInstance()->Start(70);
+			//Head::GetInstance()->MoveByAngle(Head::GetInstance()->GetRightLimitAngle()/2,Head::GetInstance()->GetTopLimitAngle());
+			sleep(1);
+			return 2;
+		}else if(gawang[1][0]==-1&&gawang2[1][0]==-1){
+			kampret=111;
+		}	
+/*	}else if(kampret==1){
+		if(gawang[1][0]!=-1){
+			if(validasiGawang(KIRIKANAN)==-1)return-1;
+			printf("SHOOTDEPAN! 1\n");
+			shootDepan(kaloLurus);
+			Head::GetInstance()->MoveByAngle(0,Head::GetInstance()->GetTopLimitAngle());
+			kampret=0;
+			kampretPan=0;
+			return 0;
+		}
+		if(kampretPan>=Head::GetInstance()->GetLeftLimitAngle()){
+			kampret=12;
+			Head::GetInstance()->MoveByAngle(kampretGawang-35.21,Head::GetInstance()->GetTopLimitAngle());
+			sleep(1);
+		}
+	}else if(kampret==2){
+		if(gawang2[1][0]!=-1){
+			if(validasiGawang(KANANKIRI)==-1)return-1;
+			printf("SHOOTDEPAN! 2\n");
+			shootDepan(kaloLurus);
+			Head::GetInstance()->MoveByAngle(0,Head::GetInstance()->GetTopLimitAngle());
+			kampret=0;
+			kampretPan=0;
+			return 0;
+		}
+		if(kampretPan<=Head::GetInstance()->GetRightLimitAngle()){
+			kampret=21;
+			Head::GetInstance()->MoveByAngle(kampretGawang+35.21,Head::GetInstance()->GetTopLimitAngle());
+			sleep(1);
+		}
+	}else if(kampret==12){
+		if(gawang2[1][0]!=-1){
+			if(validasiGawang(KANANKIRI)==-1)return-1;
+			printf("SHOOT 45 KIRI DEPAN! 12\n");
+			Action::GetInstance()->Start(82);
+			Head::GetInstance()->MoveByAngle(Head::GetInstance()->GetLeftLimitAngle()/2,Head::GetInstance()->GetTopLimitAngle());
+			kampret=0;
+			kampretPan=0;
+			return 1;
+		}
+		if(kampretPan<=Head::GetInstance()->GetRightLimitAngle()){
+			kampret=0;
+			printf("gak nemu...muter kiri ahh 12\n");
+			Action::GetInstance()->Start(80);
+			Head::GetInstance()->MoveByAngle(Head::GetInstance()->GetLeftLimitAngle(),Head::GetInstance()->GetTopLimitAngle());
+			kampretPan=0;
+			return 7;
+		}
+	}else if(kampret==21){
+		if(gawang[1][0]!=-1){
+			if(validasiGawang(KIRIKANAN)==-1)return-1;
+			printf("SHOOT 45 KANAN DEPAN! 21\n");
+			Action::GetInstance()->Start(83);
+			Head::GetInstance()->MoveByAngle(Head::GetInstance()->GetRightLimitAngle()/2,Head::GetInstance()->GetTopLimitAngle());
+			kampret=0;
+			kampretPan=0;
+			return 2;
+		}
+		if(kampretPan>=Head::GetInstance()->GetLeftLimitAngle()){
+			kampret=0;
+			printf("gak nemu...muter kiri ahh 21\n");
+			Action::GetInstance()->Start(80);
+			Head::GetInstance()->MoveByAngle(Head::GetInstance()->GetLeftLimitAngle(),Head::GetInstance()->GetTopLimitAngle());
+			kampretPan=0;
+			return 7;
+		}*/
+	}else if(kampret==111){
+		if(gawang[1][0]!=-1){
+			/*kampret = 222;
+			kampretGawang=((gawang[1][0]-imgSize.width/2)/imgSize.width)*70.42; 
+			+ MotionStatus::m_CurrentJoints.GetAngle(JointData::ID_HEAD_PAN);
+			Head::GetInstance()->MoveByAngle(kampretGawang-35.21,Head::GetInstance()->GetTopLimitAngle());
+			*/
+			kampret=0;
+			printf("SHOOT 45 KIRI DEPAN! 111 new\n");
+			Action::GetInstance()->Start(71);
+			//Head::GetInstance()->MoveByAngle(Head::GetInstance()->GetLeftLimitAngle()/2,Head::GetInstance()->GetTopLimitAngle());
+			sleep(1);
+			return 1;
+		}
+		if(kampretPan>=Head::GetInstance()->GetLeftLimitAngle()){
+			kampret=333;
+			Head::GetInstance()->MoveByAngle(0,Head::GetInstance()->GetTopLimitAngle());
+			sleep(1);
+		}
+/*	}else if(kampret==222){
+		if(gawang2[1][0]!=-1){
+			if(validasiGawang(KANANKIRI)==-1)return-1;
+			printf("SHOOTDEPAN! 222\n");
+			shootDepan(kaloLurus);
+			Head::GetInstance()->MoveByAngle(0,Head::GetInstance()->GetTopLimitAngle());
+			kampret=0;
+			kampretPan=0;
+			return 0;
+		}
+		if(kampretPan<=Head::GetInstance()->GetRightLimitAngle()){
+			printf("SHOOT 90 KIRI! 222\n");
+			Action::GetInstance()->Start(80);
+			Head::GetInstance()->MoveByAngle(Head::GetInstance()->GetLeftLimitAngle(),Head::GetInstance()->GetTopLimitAngle());
+			kampret=0;
+			kampretPan=0;
+			return 3;
+		}
+		if(kampretPan>=Head::GetInstance()->GetLeftLimitAngle()){
+			kampret=333;
+			Head::GetInstance()->MoveByAngle(0,Head::GetInstance()->GetTopLimitAngle());
+			sleep(1);
+		}*/
+	}else if(kampret==333){ 
+		if(gawang2[1][0]!=-1){
+			if(validasiGawang(KANANKIRI)==-1)return-1;
+			/*printf("SHOOT 90 KANAN! 333\n");
+			Action::GetInstance()->Start(81);
+			Head::GetInstance()->MoveByAngle(Head::GetInstance()->GetRightLimitAngle(),Head::GetInstance()->GetTopLimitAngle());
+			*/
+			printf("SHOOT 45 KANAN DEPAN! 333\n");
+			Action::GetInstance()->Start(70);
+			//Head::GetInstance()->MoveByAngle(Head::GetInstance()->GetRightLimitAngle()/2,Head::GetInstance()->GetTopLimitAngle());
+			kampret=0;
+			kampretPan=0;
+			return 4;
+		}
+		if(kampretPan<=Head::GetInstance()->GetRightLimitAngle()){
+			kampret=0;
+			/*printf("gak nemu...muter kiri ahh 333\n");
+			Action::GetInstance()->Start(80);
+			Head::GetInstance()->MoveByAngle(Head::GetInstance()->GetLeftLimitAngle(),Head::GetInstance()->GetTopLimitAngle());
+			*/
+			printf("SHOOTDEPAN! waduh new\n");
+			shootDepan(kaloLurus);
+			Head::GetInstance()->MoveByAngle(0,Head::GetInstance()->GetTopLimitAngle());
+			kampretPan=0;
+			return 7;
+		}
+	}
+	Head::GetInstance()->MoveByAngle(kampretPan,Head::GetInstance()->GetTopLimitAngle());
+	//usleep(10000);	
+	return -1;
+}
