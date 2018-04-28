@@ -15,6 +15,7 @@
 
 using namespace Robot;
 
+#define MX28_1024
 
 #define PI (3.14159265)
 

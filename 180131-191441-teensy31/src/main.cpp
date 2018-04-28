@@ -14,6 +14,7 @@
 #include <Walking.h>
 #include <Head.h>
 #include <cstdlib>
+#include <mpu6050.h>
 
 #define UART_TXRTSE (2)
 #define UART_TXRTSPOL (4)
@@ -28,17 +29,12 @@ int tendang = 0;
 int mulai = 0;
 unsigned char runns = 0;
 const int ledPin = 13;
+MPU6050 imu;
+
 
 void rutin(){
     tendang = 1;
 }
-
-int countSpeed (uint8_t id,uint8_t time,int tPos){
-    int delta = abs(state[id] - tPos);
-    state[id] = tPos;
-    return ( (1.43*delta) / (time*1.0) );
-}
-
 
 namespace std {
   void __throw_bad_alloc()
@@ -60,6 +56,7 @@ void rutinBaca(char *masukan, unsigned char sizemasukan);
 
 void setup() {
     // put your setup code here, to run once:
+    Wire.begin(I2C_MASTER, 0x00, I2C_PINS_16_17, I2C_PULLUP_INT);   
     pinMode(ledPin, OUTPUT);
     Serial.begin(BAUD_RATE_ODROID);
     Serial2.begin(BAUD_RATE);
@@ -69,8 +66,15 @@ void setup() {
     //UART1_MODEM = UART_TXRTSE | UART_TXRTSPOL; 
     Serial2.transmitterEnable(6);
     //pinMode(13, OUTPUT);
-    
-    
+    /*
+    if (!imu.begin(AFS_2G, GFS_250DPS)) {
+        Serial.println("MPU6050 is online...");
+    }
+    else {
+        Serial.println("Failed to init MPU6050");
+    while (true);
+    }
+    */
     Robot::Walking::GetInstance() -> Initialize();
     
     /*
@@ -232,6 +236,7 @@ void loop() {
             Robot::MotionStatus::m_CurrentJoints.SetIGain(id, Robot::Walking::GetInstance()->m_Joint.GetIGain(id));
             Robot::MotionStatus::m_CurrentJoints.SetDGain(id, Robot::Walking::GetInstance()->m_Joint.GetDGain(id));
         }
+        
         tulisBody(Robot::Walking::GetInstance());
     }
 }
@@ -332,8 +337,48 @@ void rutinAction(char *masukan, unsigned char sizemasukan){
         keadaan[i-1] = Robot::MotionStatus::m_CurrentJoints.GetValue(i);
     }
     tulisAction(atoi(temps),keadaan);
+    for (int i=1;i<21;i++){
+        Robot::MotionStatus::m_CurrentJoints.SetValue(i,keadaan[i-1]);
+    }
 }
 void rutinBaca(char *masukan, unsigned char sizemasukan){}
+void rutinIMU(){
+  int16_t ax, ay, az, gx, gy, gz;
+  if (imu.getMotion6Counts(&ax, &ay, &az, &gx, &gy, &gz)) {
+        
+        Serial.print("AX");
+        Serial.print(ax);
+        Serial.print("AY");
+        Serial.print(ay);
+        Serial.print("AZ");
+        Serial.print(az);
+        Serial.print("GX");
+        Serial.print(gx);
+        Serial.print("GY");
+        Serial.print(gy);
+        Serial.print("GZ");
+        Serial.print(gz);
+        Serial.println();
+        Serial.flush();
+        
+       /*
+        Serial.print(ax);
+        Serial.print(" ");
+        Serial.print(ay);
+        Serial.print(" ");
+        Serial.print(az);
+        Serial.print(" ");
+        Serial.print(gx);
+        Serial.print(" ");
+        Serial.print(gy);
+        Serial.print(" ");
+        Serial.print(gz);
+        Serial.println();
+        delay(500);
+        */
+    }
+}
+
 
 /*
 yang hadir:

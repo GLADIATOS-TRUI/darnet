@@ -4,6 +4,7 @@
 
 #define BROADCAST_ID 0xFE
 #define MAX_ID              0xFC    // 252
+#define OFFSET_DARNET 0 //124
 
 /* Macro for Control Table Value */
 #define DXL_MAKEWORD(a, b)  ((uint16_t)(((uint8_t)(((uint64_t)(a)) & 0xff)) | ((uint16_t)((uint8_t)(((uint64_t)(b)) & 0xff))) << 8))
@@ -165,7 +166,7 @@ void arrsyncWritepos (unsigned char *aID, unsigned short sizeI, int *data){
     for (int i=1;i<=sizeI;i++){ // i=1,i<19
         val = data[i-1];
         if (i==10)
-            val -= 124;
+            val -= OFFSET_DARNET;
         datas[cnt++] = DXL_LOBYTE(val);
         datas[cnt++] = DXL_HIBYTE(val);
     }
@@ -184,7 +185,7 @@ void arrsyncWritekick (unsigned char *aID, unsigned short sizeI, int *data, int 
         val = data[i-1];
         //for (int j=0;j<2;j++){
         if (i==10)
-            val -=124;
+            val -=OFFSET_DARNET;
        //Serial.printf("Byte: %x",datas[cnt-1]);
         //Serial.printf("Byte: %x",datas[cnt-1]);
         //val = data[i];
@@ -243,7 +244,7 @@ void tulisServo (Robot::JointData jd, unsigned char pilihan){
             each_length++;
             val = jd.GetValue(sID[i]);
             if (i==9)
-                val -= 124;
+                val -= OFFSET_DARNET;
             sData[cnt++] = DXL_LOBYTE(val);
             sData[cnt++] = DXL_HIBYTE(val);
             each_length+=2;

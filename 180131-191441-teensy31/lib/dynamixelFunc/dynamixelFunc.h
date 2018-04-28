@@ -1,3 +1,7 @@
+#ifndef DYNAMIXEL_FUNCTION_H
+#define DYNAMIXEL_FUNCTION_H
+
+
 #include <JointData.h>
 #include <Head.h>
 #include <Walking.h>
@@ -15,3 +19,5 @@ void tulisHead (Robot::Head *kepala);
 void tulisBody (Robot::Walking *tubuh);
 void ubah();
 void tulisAction(int nomor,int *state);
+
+#endif
