@@ -95,7 +95,7 @@ void setup() {
         syncWrite(id,size_id,data,each_length,addre);
     */
 }
-//testing
+//gajadi
 
 #define DEATHS 1
 void loop() {
