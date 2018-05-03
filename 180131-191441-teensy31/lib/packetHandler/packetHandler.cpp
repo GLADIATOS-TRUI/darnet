@@ -2,7 +2,7 @@
 #include <Arduino.h>
 //#include <stdlib.h>
 
-#define __DYN_SERIAL__ Serial2
+#define __DYN_SERIAL__ Serial1
 
 DynamixelPacket::DynamixelPacket( uint8_t aID, uint8_t aInstruction, std::vector< uint8_t > adata )
 {
@@ -40,6 +40,7 @@ void DynamixelPacket::transaction(){
   int length_written;
   int skip;
   length_written = __DYN_SERIAL__.write(this -> biPacket,this -> arrsize);
+  __DYN_SERIAL__.flush();
   if (length_written != (this -> arrsize))
     //Serial.println("ERROR");
     skip =0;

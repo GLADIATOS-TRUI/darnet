@@ -59,12 +59,12 @@ void setup() {
     Wire.begin(I2C_MASTER, 0x00, I2C_PINS_16_17, I2C_PULLUP_INT);   
     pinMode(ledPin, OUTPUT);
     Serial.begin(BAUD_RATE_ODROID);
-    Serial2.begin(BAUD_RATE);
+    Serial1.begin(BAUD_RATE);
     //uint16_t val;
     // enable PIN 6 as hardware transmitter RTS with active HIGH.
-    //CORE_PIN22_CONFIG = PORT_PCR_MUX(3);
-    //UART1_MODEM = UART_TXRTSE | UART_TXRTSPOL; 
-    Serial2.transmitterEnable(6);
+   CORE_PIN6_CONFIG = PORT_PCR_MUX(3);
+   UART0_MODEM = UART_TXRTSE | UART_TXRTSPOL; 
+   // Serial1.transmitterEnable(6);
     //pinMode(13, OUTPUT);
     /*
     if (!imu.begin(AFS_2G, GFS_250DPS)) {
@@ -240,6 +240,7 @@ void loop() {
         
         tulisBody(Robot::Walking::GetInstance());
     }
+    
 }
 
 void rutinKinem(char *masukan, unsigned char sizemasukan){

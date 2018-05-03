@@ -21,7 +21,6 @@
 #if defined(TEENSYDUINO)
 #include <i2c_t3.h>
 #else
-#include <Wire.h>
 #endif
 */
 
