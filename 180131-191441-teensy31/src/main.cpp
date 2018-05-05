@@ -277,9 +277,9 @@ void rutinKinem(char *masukan, unsigned char sizemasukan){
     temp3 = atoi(temps);
     if (masukan[6]=='-')
         temp3 *= -1;
-    Robot::Walking::GetInstance() -> A_MOVE_AMPLITUDE = temp3;
+    Robot::Walking::GetInstance() -> A_MOVE_AMPLITUDE = temp2;
     Robot::Walking::GetInstance() -> X_MOVE_AMPLITUDE = temp;
-    Robot::Walking::GetInstance() -> Y_MOVE_AMPLITUDE = temp2;
+    Robot::Walking::GetInstance() -> Y_MOVE_AMPLITUDE = temp3;
     Robot::Walking::GetInstance() -> Process();
     for (int id=1;id<21;id++){
         Robot::MotionStatus::m_CurrentJoints.SetSlope(id, Robot::Walking::GetInstance()->m_Joint.GetCWSlope(id), Robot::Walking::GetInstance()->m_Joint.GetCCWSlope(id));

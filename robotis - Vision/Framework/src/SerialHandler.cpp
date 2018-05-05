@@ -302,7 +302,7 @@ void SerialHandler::WalkingStop()
 {
 	SendKinematics();
 	char bufferWrite[1];
-	bufferWrite [0] = 255;
+	bufferWrite [0] = 'Q';
 	KirimChar(bufferWrite, port);    
 	isRunning = false;
 }
