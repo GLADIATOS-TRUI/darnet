@@ -1,0 +1,15 @@
+rm main.o
+rm main.o.d
+rm opencvhogtrainer
+rm detect.o
+rm detect.o.d
+rm hogdetect 
+
+g++ `pkg-config --cflags opencv` -c -g -MMD -MP -MF main.o.d -o main.o main.cpp
+
+g++ `pkg-config --cflags opencv` -c -g -o detect.o detect.cpp
+
+g++ `pkg-config --cflags opencv` -o opencvhogtrainer main.o svmlight/svm_learn.o svmlight/svm_hideo.o svmlight/svm_common.o `pkg-config --libs opencv`
+
+g++ `pkg-config --cflags opencv` -o hogdetect detect.o `pkg-config --libs opencv`
+
