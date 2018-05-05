@@ -2,7 +2,7 @@
 #include <Arduino.h>
 //#include <stdlib.h>
 
-#define __DYN_SERIAL__ Serial1
+#define __DYN_SERIAL__ Serial2
 
 DynamixelPacket::DynamixelPacket( uint8_t aID, uint8_t aInstruction, std::vector< uint8_t > adata )
 {
