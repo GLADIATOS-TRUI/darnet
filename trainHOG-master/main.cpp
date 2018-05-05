@@ -1,4 +1,5 @@
 /**
+ * 
  * @file:   main.cpp
  * @author: Jan Hendriks (dahoc3150 [at] gmail.com)
  * @date:   Created on 2. Dezember 2012
